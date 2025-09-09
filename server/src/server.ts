@@ -5,8 +5,11 @@ import compression from 'compression';
 import helmet from 'helmet';
 import config from '@/config';
 import type { CorsOptions } from 'cors';
-import limiter from './lib/express_rate_limit';
+import limiter from '@/lib/express_rate_limit';
+import { logger } from '@/lib/winston';
+import { connectToDataBase , disconnectFromDatabase } from '@/lib/mongoose';
 
+import v1Routes from '@/routes/v1';
 const app = express();
 
 const corsOptions: CorsOptions = {
@@ -43,18 +46,21 @@ app.use(limiter); // ratelimit middleware to prevent excessive req and enhance s
 
 (async () => {
 
+
+
     try {
-        app.get('/', (req, res) => {
-            res.json({
-                message: 'App iS started SuccessFully',
-            });
-        });
+
+        
+
+        await connectToDataBase();
+        app.use('/api/v1',v1Routes)
+       
         app.listen(config.PORT, () => {
-            console.log(`Srever Running : http://localhost:${config.PORT}`);
+            logger.info(`Srever Running : http://localhost:${config.PORT}`);
         });
 
     } catch (error) {
-        console.log("Failed To Start server")
+        logger.error("Failed To Start server")
 
         if(config.NODE_ENV === 'production'){
             process.exit(1)
@@ -68,10 +74,11 @@ app.use(limiter); // ratelimit middleware to prevent excessive req and enhance s
 
 const handleServerShutDown = async () => {
     try{
-        console.log("Server ShutDown ")
+        await disconnectFromDatabase();
+        logger.warn("Server ShutDown ")
         process.exit(0)
     }catch(error){
-        console.log("Error While Server ShutDown")
+        logger.error("Error While Server ShutDown")
     }
 }
 
