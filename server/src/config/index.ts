@@ -13,10 +13,14 @@ const config = {
     JWT_ACCESS_EXPIRE: (process.env.JWT_ACCESS_EXPIRE || "15m").replace(",", "") as ms.StringValue,
     JWT_REFRESH_SECRET: process.env.JWT_REFRESH_EXPIRE as string,
     JWT_REFRESH_EXPIRE: (process.env.JWT_REFRESH_EXPIRE || "7d").replace(",", "") as ms.StringValue,
-    WHITELIST_ADMINS_MAIL:[
+    WHITELIST_ADMINS_MAIL: [
         'sandipkthakor8990@gmail.com',
         'imsendy1288@gmail.com'
-    ]
+    ],
+    MAIL_PASS: process.env.MAIL_PASS,
+    MAIL_USER: process.env.MAIL_USER,
+    MAIL_HOST: process.env.MAIL_HOST,
+    MAIL_PORT:465
 
 
 };
