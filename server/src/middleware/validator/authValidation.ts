@@ -1,6 +1,6 @@
 // middlewares/validators/authValidators.ts
 import { body } from "express-validator";
-import User from "@/models/User"; // adjust path as needed
+
 
 export const authValidationRules = {
   loginUser: [

@@ -49,6 +49,6 @@ export const userValidationRules = {
             .isIn(['Admin', 'Instructor', 'student'])
             .withMessage('Invalid account type'),
 
-        // body('image').notEmpty().withMessage('Profile image is required'),
+       
     ],
 };

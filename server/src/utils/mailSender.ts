@@ -1,11 +1,14 @@
 import config from '@/config';
 import { logger } from '@/lib/winston';
+import { stringify } from 'node:querystring';
 import nodemailer, { SentMessageInfo, Transporter } from 'nodemailer';
 
 type MailData = {
   email: string;
   title: string;
-  body: string;
+  body: string
+  | Number;
+
 };
 
 const mailSender = async ({ email, title, body }: MailData) => {
@@ -24,7 +27,7 @@ const mailSender = async ({ email, title, body }: MailData) => {
       from: `Mail Send by Sendy`,
       to: email,
       subject: title,
-      html: body,
+      html: String(body),
     });
 
     logger.info('Verification email sent', { to: email });
