@@ -93,3 +93,74 @@ export const showAllCourses = async (
     });
   }
 };
+
+
+
+export const editCourse = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { courseId, ...updates } = req.body;
+
+    if (!courseId) {
+      logger.warn("Course ID missing in request body");
+      res.status(400).json({ success: false, message: "Course ID is required" });
+      return;
+    }
+
+    const course = await Course.findById(courseId);
+    if (!course) {
+      logger.warn(`Course not found: ${courseId}`);
+      res.status(404).json({ success: false, message: "Course not found" });
+      return;
+    }
+
+    if (req.files && "thumbnailImage" in req.files) {
+      logger.info(`Updating thumbnail for course: ${courseId}`);
+      const thumbnail = (req.files as any).thumbnailImage;
+      const thumbnailImage = await uploadImageToCloudinary(
+        thumbnail,
+        process.env.FOLDER_NAME || "courses"
+      );
+      updates.thumbnail = thumbnailImage.secure_url;
+    }
+
+    if (updates.tag && typeof updates.tag === "string") {
+      updates.tag = JSON.parse(updates.tag);
+    }
+    if (updates.instructions && typeof updates.instructions === "string") {
+      updates.instructions = JSON.parse(updates.instructions);
+    }
+
+    const updatedCourse = await Course.findByIdAndUpdate(
+      courseId,
+      { $set: updates },
+      { new: true }
+    )
+      .populate({
+        path: "instructor",
+        populate: { path: "additionalDetails" },
+      })
+      .populate("category")
+      .populate("ratingAndReviews")
+      .populate({
+        path: "courseContent",
+        populate: { path: "subSection" },
+      })
+      .exec();
+
+    logger.info(`Course updated successfully: ${courseId}`);
+
+    res.status(200).json({
+      success: true,
+      message: "Course updated successfully",
+      data: updatedCourse,
+    });
+  } catch (error: any) {
+    logger.error("Error updating course", { error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
